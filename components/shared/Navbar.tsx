@@ -22,61 +22,60 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
     { label: "Home", href: "/" },
     {
-        label: "About",
+        label: "ExCom",
         children: [
-            { label: "About IEEE", href: "/about/ieee" },
-            { label: "About CUET SB", href: "/about/cuet" },
-            { label: "Executive Committee", href: "/about/committee" },
+            { label: "ExCom 2026", href: "#" },
+            { label: "ExCom 2025", href: "#" },
+            { label: "ExCom 2024", href: "#" },
         ],
     },
+    { label: "Membership & Benefits", href: "#" },
     {
-        label: "Societies & Chapters",
+        label: "Events",
         children: [
-            { label: "Computer Society", href: "/societies/cs" },
-            { label: "Robotics & Automation", href: "/societies/ras" },
-            { label: "Power & Energy", href: "/societies/pes" },
-            { label: "Women in Engineering", href: "/societies/wie" },
+            { label: "Events 2026", href: "#" },
+            { label: "Events 2025", href: "#" },
+            { label: "Events 2024", href: "#" },
         ],
     },
-    { label: "Events", href: "/events" },
-    { label: "Achievements", href: "/achievements" },
-    { label: "Web Management Team", href: "/web-team" },
-    { label: "Contact", href: "/contact" },
+    { label: "Gallery", href: "#" },
+    { label: "Contact", href: "#" },
 ];
 
-const ACCENT = "#f26522";
-const BG = "tranparent";
+const ACCENT = "#f9a31a";
+const BG = "rgba(13,17,23,0.97)";
 
 // ─── Dropdown Menu ────────────────────────────────────────────────────────────
 function DropdownMenu({ items }: { items: NavChild[] }) {
     return (
-        <div
-            className="absolute top-full left-1/2 z-50 mt-3 min-w-[200px] -translate-x-1/2 overflow-hidden rounded-xl border py-1 shadow-2xl"
-            style={{
-                background: "rgba(13,17,23,0.97)",
-                borderColor: "rgba(242,101,34,0.18)",
-                backdropFilter: "blur(12px)",
-            }}
-        >
-            {/* top accent line */}
-            <div className="h-px w-full" style={{ background: ACCENT, opacity: 0.6 }} />
-            {items.map((child) => (
-                <Link
-                    key={child.href}
-                    href={child.href}
-                    className="block px-5 py-2.5 text-sm font-medium text-neutral-300 transition-colors duration-150 hover:text-white"
-                    style={{ fontFamily: "'Rajdhani', sans-serif", letterSpacing: "0.03em" }}
-                    onMouseEnter={(e) => {
-                        (e.currentTarget as HTMLAnchorElement).style.background =
-                            "rgba(242,101,34,0.10)";
-                    }}
-                    onMouseLeave={(e) => {
-                        (e.currentTarget as HTMLAnchorElement).style.background = "transparent";
-                    }}
-                >
-                    {child.label}
-                </Link>
-            ))}
+        <div className="absolute top-full left-1/2 z-50 min-w-[200px] -translate-x-1/2 pt-2">
+            <div
+                className="overflow-hidden rounded-xl border py-1 shadow-2xl"
+                style={{
+                    background: "rgba(13,17,23,0.97)",
+                    borderColor: "rgba(249,163,26,0.18)",
+                    backdropFilter: "blur(12px)",
+                }}
+            >
+                <div className="h-px w-full" style={{ background: ACCENT, opacity: 0.6 }} />
+                {items.map((child) => (
+                    <Link
+                        key={child.label}
+                        href={child.href}
+                        className="block px-5 py-2.5 text-sm font-medium text-neutral-300 transition-colors duration-150 hover:text-white"
+                        style={{ letterSpacing: "0.03em" }}
+                        onMouseEnter={(e) => {
+                            (e.currentTarget as HTMLAnchorElement).style.background =
+                                "rgba(249,163,26,0.10)";
+                        }}
+                        onMouseLeave={(e) => {
+                            (e.currentTarget as HTMLAnchorElement).style.background = "transparent";
+                        }}
+                    >
+                        {child.label}
+                    </Link>
+                ))}
+            </div>
         </div>
     );
 }
@@ -98,7 +97,7 @@ function NavLink({ item }: { item: NavItem }) {
                     className={cn(
                         "flex items-center gap-1 whitespace-nowrap text-sm font-semibold text-neutral-300 transition-colors duration-150 hover:text-white"
                     )}
-                    style={{ fontFamily: "'Rajdhani', sans-serif", letterSpacing: "0.04em" }}
+                    style={{ letterSpacing: "0.04em" }}
                     aria-expanded={open}
                     onClick={() => setOpen((v) => !v)}
                 >
@@ -116,7 +115,7 @@ function NavLink({ item }: { item: NavItem }) {
                 <Link
                     href={item.href ?? "#"}
                     className="whitespace-nowrap text-sm font-semibold text-neutral-300 transition-colors duration-150 hover:text-white"
-                    style={{ fontFamily: "'Rajdhani', sans-serif", letterSpacing: "0.04em" }}
+                    style={{ letterSpacing: "0.04em" }}
                 >
                     {item.label}
                 </Link>
@@ -157,7 +156,7 @@ function MobileMenu({
                 </button>
             </div>
 
-            <div className="h-px w-full" style={{ background: "rgba(242,101,34,0.25)" }} />
+            <div className="h-px w-full" style={{ background: "rgba(249,163,26,0.25)" }} />
 
             <nav className="flex flex-col gap-1 px-4 py-4">
                 {NAV_ITEMS.map((item, idx) => (
@@ -167,7 +166,6 @@ function MobileMenu({
                                 <button
                                     type="button"
                                     className="flex w-full items-center justify-between px-3 py-3 text-left text-base font-semibold text-neutral-200 hover:text-white"
-                                    style={{ fontFamily: "'Rajdhani', sans-serif" }}
                                     onClick={() =>
                                         setExpandedIdx(expandedIdx === idx ? null : idx)
                                     }
@@ -184,14 +182,13 @@ function MobileMenu({
                                     />
                                 </button>
                                 {expandedIdx === idx && (
-                                    <div className="ml-4 flex flex-col gap-0.5 border-l pl-3" style={{ borderColor: "rgba(242,101,34,0.3)" }}>
+                                    <div className="ml-4 flex flex-col gap-0.5 border-l pl-3" style={{ borderColor: "rgba(249,163,26,0.3)" }}>
                                         {item.children.map((child) => (
                                             <Link
-                                                key={child.href}
+                                                key={child.label}
                                                 href={child.href}
                                                 onClick={onClose}
                                                 className="py-2.5 text-sm font-medium text-neutral-400 hover:text-white"
-                                                style={{ fontFamily: "'Rajdhani', sans-serif" }}
                                             >
                                                 {child.label}
                                             </Link>
@@ -204,7 +201,6 @@ function MobileMenu({
                                 href={item.href ?? "#"}
                                 onClick={onClose}
                                 className="block px-3 py-3 text-base font-semibold text-neutral-200 hover:text-white"
-                                style={{ fontFamily: "'Rajdhani', sans-serif" }}
                             >
                                 {item.label}
                             </Link>
@@ -215,10 +211,10 @@ function MobileMenu({
 
             <div className="mt-auto px-5 pb-8 pt-4">
                 <Link
-                    href="https://ieee.org"
+                    href="#"
                     onClick={onClose}
                     className="block w-full rounded-full py-3 text-center text-sm font-bold text-white"
-                    style={{ background: ACCENT, fontFamily: "'Rajdhani', sans-serif", letterSpacing: "0.05em" }}
+                    style={{ background: ACCENT, letterSpacing: "0.05em" }}
                 >
                     IEEE Portal
                 </Link>
@@ -231,13 +227,13 @@ function MobileMenu({
 function IEEELogo() {
     return (
         <Link
-            href="/"
+            href="#"
             className="flex items-center gap-2"
-            aria-label="IEEE CUET Home"
+            aria-label="IEEE IIUC Home"
         >
             <Image
-                src="/logos/ieee-logo-removebg.webp" // put your actual path
-                alt="IEEE CUET Logo"
+                src="/logos/logo.png" // put your actual path
+                alt="IEEE IIUC Logo"
                 width={120}
                 height={60}
                 priority
@@ -274,10 +270,9 @@ export default function Navbar() {
                 )}
                 style={{
                     background: scrolled
-                        ? "rgba(13,17,23,0.97)"
-                        : "rgba(13,17,23,0.92)",
-                    borderColor: scrolled ? "rgba(242,101,34,0.15)" : "transparent",
-                    backdropFilter: "blur(14px)",
+                        ? "rgba(13,17,23,0.92)"
+                        : "transparent",
+                    borderColor: scrolled ? "rgba(249,163,26,0.15)" : "transparent",
                 }}
             >
                 <nav className="relative mx-auto flex py-4 max-w-7xl items-center justify-between px-5">
@@ -297,14 +292,11 @@ export default function Navbar() {
                     <div className="hidden items-center lg:flex">
                         <Link
                             href="https://ieee.org"
-                            target="_blank"
-                            rel="noopener noreferrer"
                             className="rounded-full px-5 py-2 text-sm font-bold text-white transition-transform duration-150 hover:scale-105 active:scale-95"
                             style={{
                                 background: ACCENT,
-                                fontFamily: "'Rajdhani', sans-serif",
                                 letterSpacing: "0.06em",
-                                boxShadow: "0 0 20px rgba(242,101,34,0.4)",
+                                boxShadow: "0 0 20px rgba(249,163,26,0.4)",
                             }}
                         >
                             IEEE Portal
@@ -325,7 +317,7 @@ export default function Navbar() {
                 {/* Bottom accent line */}
                 <div
                     className="h-px w-full"
-                    style={{ background: "linear-gradient(90deg, transparent, rgba(242,101,34,0.4) 40%, rgba(242,101,34,0.4) 60%, transparent)" }}
+                    style={{ background: "linear-gradient(90deg, transparent, rgba(249,163,26,0.4) 40%, rgba(249,163,26,0.4) 60%, transparent)" }}
                 />
             </header>
 

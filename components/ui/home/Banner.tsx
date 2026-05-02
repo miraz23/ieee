@@ -13,16 +13,58 @@ interface Particle {
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
-const PARTICLE_COUNT = 80;
-const LINK_DISTANCE = 150;
-const PARTICLE_COLOR = "rgba(242, 101, 34,"; // orange — alpha appended later
-const LINK_COLOR = "rgba(242, 101, 34,";
-const PARTICLE_SPEED = 0.8;
+const PARTICLE_COLOR = "rgba(249, 163, 26,"; // orange — alpha appended later
+const LINK_COLOR = "rgba(249, 163, 26,";
 const BG_COLOR = "#0d1117";
-/** Max opacity for particle–particle links at zero distance (fade by distance). */
-const LINK_OPACITY_MAX = 0.48;
-/** Max opacity for cursor–particle links at zero distance. */
-const MOUSE_LINK_OPACITY_MAX = 0.78;
+
+/** Below this canvas width, use a sparser, softer network (phones). */
+const MOBILE_CANVAS_MAX = 640;
+
+type ParticleConfig = {
+  count: number;
+  linkDistance: number;
+  linkOpacityMax: number;
+  mouseLinkOpacityMax: number;
+  mouseLinkMaxDist: number;
+  linkLineWidth: number;
+  dotOpacity: number;
+  radiusMin: number;
+  radiusMax: number;
+  speed: number;
+  repulseRadius: number;
+};
+
+function getParticleConfig(width: number): ParticleConfig {
+  const narrow = width > 0 && width < MOBILE_CANVAS_MAX;
+  if (narrow) {
+    return {
+      count: 46,
+      linkDistance: 116,
+      linkOpacityMax: 0.3,
+      mouseLinkOpacityMax: 0.62,
+      mouseLinkMaxDist: 148,
+      linkLineWidth: 0.62,
+      dotOpacity: 0.62,
+      radiusMin: 1,
+      radiusMax: 2.2,
+      speed: 0.45,
+      repulseRadius: 90,
+    };
+  }
+  return {
+    count: 80,
+    linkDistance: 150,
+    linkOpacityMax: 0.48,
+    mouseLinkOpacityMax: 0.78,
+    mouseLinkMaxDist: 180,
+    linkLineWidth: 0.8,
+    dotOpacity: 0.75,
+    radiusMin: 1.5,
+    radiusMax: 3,
+    speed: 0.8,
+    repulseRadius: 120,
+  };
+}
 
 // ─── Hook: canvas particle animation ─────────────────────────────────────────
 function useParticleCanvas(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
@@ -37,25 +79,30 @@ function useParticleCanvas(canvasRef: React.RefObject<HTMLCanvasElement | null>)
     let mouseX = -9999;
     let mouseY = -9999;
 
-    // Resize canvas to fill parent
+    let cfg: ParticleConfig = getParticleConfig(0);
+    let particles: Particle[] = [];
+
+    const seedParticles = () => {
+      cfg = getParticleConfig(canvas.width);
+      particles = Array.from({ length: cfg.count }, () => ({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        vx: (Math.random() - 0.5) * cfg.speed * 2,
+        vy: (Math.random() - 0.5) * cfg.speed * 2,
+        radius: Math.random() * (cfg.radiusMax - cfg.radiusMin) + cfg.radiusMin,
+      }));
+    };
+
     const resize = () => {
       const parent = canvas.parentElement;
       if (!parent) return;
       canvas.width = parent.offsetWidth;
       canvas.height = parent.offsetHeight;
+      seedParticles();
     };
 
     resize();
     window.addEventListener("resize", resize);
-
-    // Seed particles
-    const particles: Particle[] = Array.from({ length: PARTICLE_COUNT }, () => ({
-      x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height,
-      vx: (Math.random() - 0.5) * PARTICLE_SPEED * 2,
-      vy: (Math.random() - 0.5) * PARTICLE_SPEED * 2,
-      radius: Math.random() * 1.5 + 1.5,
-    }));
 
     // Mouse tracking
     const onMouseMove = (e: MouseEvent) => {
@@ -76,7 +123,7 @@ function useParticleCanvas(canvasRef: React.RefObject<HTMLCanvasElement | null>)
         const dx = p.x - cx;
         const dy = p.y - cy;
         const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < 120) {
+        if (dist < cfg.repulseRadius) {
           p.vx += (dx / dist) * 2;
           p.vy += (dy / dist) * 2;
         }
@@ -97,9 +144,9 @@ function useParticleCanvas(canvasRef: React.RefObject<HTMLCanvasElement | null>)
 
         // Clamp speed after mouse interaction
         const speed = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
-        if (speed > PARTICLE_SPEED * 20) {
-          p.vx = (p.vx / speed) * PARTICLE_SPEED * 50;
-          p.vy = (p.vy / speed) * PARTICLE_SPEED * 50;
+        if (speed > cfg.speed * 20) {
+          p.vx = (p.vx / speed) * cfg.speed * 50;
+          p.vy = (p.vy / speed) * cfg.speed * 50;
         }
       });
 
@@ -111,11 +158,11 @@ function useParticleCanvas(canvasRef: React.RefObject<HTMLCanvasElement | null>)
           const dist = Math.sqrt(dx * dx + dy * dy);
 
           // Particle–particle links
-          if (dist < LINK_DISTANCE) {
-            const opacity = (1 - dist / LINK_DISTANCE) * LINK_OPACITY_MAX;
+          if (dist < cfg.linkDistance) {
+            const opacity = (1 - dist / cfg.linkDistance) * cfg.linkOpacityMax;
             ctx.beginPath();
             ctx.strokeStyle = `${LINK_COLOR}${opacity})`;
-            ctx.lineWidth = 0.8;
+            ctx.lineWidth = cfg.linkLineWidth;
             ctx.moveTo(particles[i].x, particles[i].y);
             ctx.lineTo(particles[j].x, particles[j].y);
             ctx.stroke();
@@ -126,11 +173,12 @@ function useParticleCanvas(canvasRef: React.RefObject<HTMLCanvasElement | null>)
         const mdx = particles[i].x - mouseX;
         const mdy = particles[i].y - mouseY;
         const mDist = Math.sqrt(mdx * mdx + mdy * mdy);
-        if (mDist < 180) {
-          const opacity = (1 - mDist / 180) * MOUSE_LINK_OPACITY_MAX;
+        if (mDist < cfg.mouseLinkMaxDist) {
+          const opacity =
+            (1 - mDist / cfg.mouseLinkMaxDist) * cfg.mouseLinkOpacityMax;
           ctx.beginPath();
           ctx.strokeStyle = `${LINK_COLOR}${opacity})`;
-          ctx.lineWidth = 0.8;
+          ctx.lineWidth = cfg.linkLineWidth;
           ctx.moveTo(particles[i].x, particles[i].y);
           ctx.lineTo(mouseX, mouseY);
           ctx.stroke();
@@ -141,7 +189,7 @@ function useParticleCanvas(canvasRef: React.RefObject<HTMLCanvasElement | null>)
       particles.forEach((p) => {
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-        ctx.fillStyle = `${PARTICLE_COLOR}0.75)`;
+        ctx.fillStyle = `${PARTICLE_COLOR}${cfg.dotOpacity})`;
         ctx.fill();
       });
 
@@ -170,36 +218,42 @@ export default function Banner() {
       className="relative flex min-h-screen w-full items-center justify-center overflow-hidden"
       style={{ backgroundColor: BG_COLOR }}
     >
-      {/* Particle canvas */}
-      <canvas
-        ref={canvasRef}
-        className="absolute inset-0 h-full w-full"
-        aria-hidden="true"
+      {/* Particle canvas — slightly softened on small screens */}
+      <div
+        className="absolute inset-0 opacity-100 max-sm:opacity-[0.92]"
+        aria-hidden
+      >
+        <canvas ref={canvasRef} className="h-full w-full" />
+      </div>
+
+      {/* Calm the busy network behind copy on narrow viewports */}
+      <div
+        className="pointer-events-none absolute inset-0 z-1 bg-[radial-gradient(ellipse_95%_80%_at_50%_45%,rgba(13,17,23,0.56)_0%,rgba(13,17,23,0.12)_50%,transparent_75%)] sm:hidden"
+        aria-hidden
       />
 
       {/* Hero content */}
-      <div className="relative z-10 mx-auto max-w-3xl px-6 py-20 text-center">
+      <div className="relative z-10 mx-auto max-w-3xl px-5 py-24 text-center sm:px-6 sm:py-20">
         <h1
-          className="mb-1 text-4xl font-bold leading-tight tracking-wide text-white sm:text-5xl font-poppins"
+          className="mb-4 mt-2 text-3xl font-bold leading-snug tracking-wide text-white sm:mb-0 sm:mt-0 sm:text-4xl sm:leading-tight md:text-5xl"
         >
-          IEEE Computer Society
+          IEEE COMPUTER SOCIETY
         </h1>
 
         <p
-          className="mb-5 text-3xl font-bold tracking-wide sm:text-4xl text-[#f26522] font-poppins"
+          className="mb-6 text-2xl font-bold leading-snug tracking-wide text-[#f9a31a] sm:mb-5 sm:text-3xl md:text-4xl"
         >
           IIUC Student Branch Chapter
         </p>
 
-        <p className="mb-9 text-sm leading-relaxed text-neutral-400 sm:text-base font-poppins">
-          Advancing Robotics and Automation through education, hands-on learning
-          and community involvement.
+        <p className="mb-10 mx-auto max-w-xl text-sm leading-relaxed text-neutral-300 sm:mb-9 sm:max-w-none sm:text-base sm:text-neutral-400">
+          Innovating the future through code, community, and collaboration by empowering the next generation of computing professionals with the technical mastery and leadership skills needed to drive the global digital revolution.
         </p>
 
         {/* CTA Button */}
         <Link
-          href="/ras"
-          className="inline-block rounded-full px-8 py-3 text-base font-semibold text-white transition-transform hover:scale-105 active:scale-95 font-poppins bg-[#f26522]"
+          href="#"
+          className="inline-block rounded-full bg-[#f9a31a] px-8 py-3 text-base font-semibold text-white transition-transform hover:scale-105 active:scale-95"
         >
           Visit Page
         </Link>

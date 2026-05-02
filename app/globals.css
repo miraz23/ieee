@@ -7,7 +7,7 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
+  --font-sans: var(--font-montserrat);
   --font-mono: var(--font-geist-mono);
   --font-heading: var(--font-sans);
   --color-sidebar-ring: var(--sidebar-ring);
@@ -48,7 +48,7 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 
   /* fonts */
-  --font-poppins: var(--font-poppins);
+  --font-montserrat: var(--font-montserrat);
 }
 
 :root {
@@ -85,7 +85,6 @@
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
 
-  --font-poppins: "Poppins", sans-serif;
 }
 
 .dark {
