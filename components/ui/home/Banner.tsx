@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface Particle {
@@ -12,12 +13,23 @@ interface Particle {
   radius: number;
 }
 
+interface BinaryBit {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  char: string;
+  opacity: number;
+  size: number;
+  flipTimer: number;
+  flipInterval: number;
+}
+
 // ─── Constants ────────────────────────────────────────────────────────────────
-const PARTICLE_COLOR = "rgba(249, 163, 26,"; // orange — alpha appended later
+const PARTICLE_COLOR = "rgba(249, 163, 26,";
 const LINK_COLOR = "rgba(249, 163, 26,";
 const BG_COLOR = "#0d1117";
 
-/** Below this canvas width, use a sparser, softer network (phones). */
 const MOBILE_CANVAS_MAX = 640;
 
 type ParticleConfig = {
@@ -32,6 +44,7 @@ type ParticleConfig = {
   radiusMax: number;
   speed: number;
   repulseRadius: number;
+  bitCount: number;
 };
 
 function getParticleConfig(width: number): ParticleConfig {
@@ -49,6 +62,7 @@ function getParticleConfig(width: number): ParticleConfig {
       radiusMax: 2.2,
       speed: 0.45,
       repulseRadius: 90,
+      bitCount: 50,
     };
   }
   return {
@@ -63,6 +77,7 @@ function getParticleConfig(width: number): ParticleConfig {
     radiusMax: 3,
     speed: 0.8,
     repulseRadius: 120,
+    bitCount: 90,
   };
 }
 
@@ -81,15 +96,31 @@ function useParticleCanvas(canvasRef: React.RefObject<HTMLCanvasElement | null>)
 
     let cfg: ParticleConfig = getParticleConfig(0);
     let particles: Particle[] = [];
+    let bits: BinaryBit[] = [];
 
     const seedParticles = () => {
       cfg = getParticleConfig(canvas.width);
+
+      // Particles
       particles = Array.from({ length: cfg.count }, () => ({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
         vx: (Math.random() - 0.5) * cfg.speed * 2,
         vy: (Math.random() - 0.5) * cfg.speed * 2,
         radius: Math.random() * (cfg.radiusMax - cfg.radiusMin) + cfg.radiusMin,
+      }));
+
+      // Scattered binary bits
+      bits = Array.from({ length: cfg.bitCount }, () => ({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        vx: (Math.random() - 0.5) * 0.35,
+        vy: (Math.random() - 0.5) * 0.35,
+        char: Math.random() > 0.5 ? "1" : "0",
+        opacity: Math.random() * 0.22 + 0.07,
+        size: Math.floor(Math.random() * 5 + 10),
+        flipTimer: 0,
+        flipInterval: Math.floor(Math.random() * 300 + 120),
       }));
     };
 
@@ -135,7 +166,31 @@ function useParticleCanvas(canvasRef: React.RefObject<HTMLCanvasElement | null>)
     const draw = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Update & bounce
+      // ── Scattered binary bits (drawn first, behind everything) ──
+      bits.forEach((b) => {
+        b.x += b.vx;
+        b.y += b.vy;
+
+        // Wrap around edges
+        if (b.x < -20) b.x = canvas.width + 20;
+        if (b.x > canvas.width + 20) b.x = -20;
+        if (b.y < -20) b.y = canvas.height + 20;
+        if (b.y > canvas.height + 20) b.y = -20;
+
+        // Occasionally flip between 0 and 1
+        b.flipTimer++;
+        if (b.flipTimer >= b.flipInterval) {
+          b.flipTimer = 0;
+          b.char = b.char === "1" ? "0" : "1";
+          b.flipInterval = Math.floor(Math.random() * 300 + 120);
+        }
+
+        ctx.font = `${b.size}px monospace`;
+        ctx.fillStyle = `${PARTICLE_COLOR}${b.opacity})`;
+        ctx.fillText(b.char, b.x, b.y);
+      });
+
+      // ── Update & bounce particles ──
       particles.forEach((p) => {
         p.x += p.vx;
         p.y += p.vy;
@@ -150,14 +205,13 @@ function useParticleCanvas(canvasRef: React.RefObject<HTMLCanvasElement | null>)
         }
       });
 
-      // Draw links
+      // ── Draw links ──
       for (let i = 0; i < particles.length; i++) {
         for (let j = i + 1; j < particles.length; j++) {
           const dx = particles[i].x - particles[j].x;
           const dy = particles[i].y - particles[j].y;
           const dist = Math.sqrt(dx * dx + dy * dy);
 
-          // Particle–particle links
           if (dist < cfg.linkDistance) {
             const opacity = (1 - dist / cfg.linkDistance) * cfg.linkOpacityMax;
             ctx.beginPath();
@@ -185,7 +239,7 @@ function useParticleCanvas(canvasRef: React.RefObject<HTMLCanvasElement | null>)
         }
       }
 
-      // Draw dots
+      // ── Draw dots ──
       particles.forEach((p) => {
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
@@ -218,7 +272,7 @@ export default function Banner() {
       className="relative flex min-h-screen w-full items-center justify-center overflow-hidden"
       style={{ backgroundColor: BG_COLOR }}
     >
-      {/* Particle canvas — slightly softened on small screens */}
+      {/* Particle canvas */}
       <div
         className="absolute inset-0 opacity-100 max-sm:opacity-[0.92]"
         aria-hidden
@@ -253,9 +307,10 @@ export default function Banner() {
         {/* CTA Button */}
         <Link
           href="#"
-          className="inline-block rounded-full bg-[#f9a31a] px-8 py-3 text-base font-semibold text-white transition-transform hover:scale-105 active:scale-95"
+          className="inline-flex items-center gap-2 rounded-full bg-[#f9a31a] px-8 py-3 text-base font-semibold text-white transition-transform hover:scale-105 active:scale-95"
         >
-          Visit Page
+          Explore
+          <ArrowRight size={18} strokeWidth={2.25} aria-hidden />
         </Link>
       </div>
     </section>

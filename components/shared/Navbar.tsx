@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { ChevronDown, Menu, X } from "lucide-react";
+import { ArrowUpRight, ChevronDown, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 
@@ -216,7 +216,7 @@ function MobileMenu({
                     className="block w-full rounded-full py-3 text-center text-sm font-bold text-white"
                     style={{ background: ACCENT, letterSpacing: "0.05em" }}
                 >
-                    IEEE Portal
+                    IEEE IIUC SBC
                 </Link>
             </div>
         </div>
@@ -291,15 +291,23 @@ export default function Navbar() {
                     {/* IEEE Portal CTA */}
                     <div className="hidden items-center lg:flex">
                         <Link
-                            href="https://ieee.org"
-                            className="rounded-full px-5 py-2 text-sm font-bold text-white transition-transform duration-150 hover:scale-105 active:scale-95"
+                            href="#"
+                            className="group inline-flex items-center gap-2.5 rounded-full border px-5 py-2 text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:scale-[1.02] active:translate-y-0 active:scale-[0.98]"
                             style={{
-                                background: ACCENT,
+                                background:
+                                    "linear-gradient(135deg, rgba(249,163,26,0.95), rgba(249,163,26,0.78))",
+                                borderColor: "rgba(255,255,255,0.18)",
                                 letterSpacing: "0.06em",
-                                boxShadow: "0 0 20px rgba(249,163,26,0.4)",
+                                boxShadow:
+                                    "0 12px 30px rgba(249,163,26,0.28), inset 0 1px 0 rgba(255,255,255,0.22)",
                             }}
                         >
-                            IEEE Portal
+                            IEEE IIUC SBC
+                            <ArrowUpRight
+                                size={15}
+                                className="transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                                aria-hidden
+                            />
                         </Link>
                     </div>
 
