@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Poppins } from "next/font/google";
+import Navbar from "@/components/shared/Navbar";
 
 export const metadata: Metadata = {
   title: "IEEE",
@@ -17,7 +18,8 @@ export default function RootLayout({
       lang="en"
       className={`h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
+      <body>
+        <Navbar />
         {children}
       </body>
     </html>
