@@ -45,7 +45,7 @@ const NAV_ITEMS: NavItem[] = [
 ];
 
 const ACCENT = "#f26522";
-const BG = "#0d1117";
+const BG = "tranparent";
 
 // ─── Dropdown Menu ────────────────────────────────────────────────────────────
 function DropdownMenu({ items }: { items: NavChild[] }) {
